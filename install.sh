@@ -46,7 +46,7 @@ else
 fi
 
 # Reading back SUMMON_COMMAND to get the old command name on --update
-marker_version=$(cat "$MARKER_FILE" 2>/dev/null || true)
+marker_version=$(sed -n '1p' "$MARKER_FILE" 2>/dev/null || true)
 
 # Download and extract Ventoy (skip if marker matches and not forced)
 if [ "$FORCE_UPDATE" = true ] || [ ! -f "$MARKER_FILE" ] || [ "$marker_version" != "$VENTOY_VERSION" ]; then
