@@ -4,10 +4,10 @@ APP_NAME   := $(shell . ./config/defaults.conf && echo $$APP_NAME)
 SUMMON_CMD := $(shell . ./config/defaults.conf && echo $$SUMMON_COMMAND)
 
 install:
-	sudo ./install.sh
+	sudo bash ./install.sh
 
 update:
-	sudo ./install.sh --update
+	sudo bash ./install.sh --update
 
 uninstall:
 	@echo "Removing $(APP_NAME)..."
