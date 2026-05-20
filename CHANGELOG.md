@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] - 2026-05-20
+### Added
+- Parallel drive processing: all selected drives now format and copy ISOs simultaneously using background jobs, yielding roughly N-fold speedup for N drives
+- Zenity GUI: disk selection uses a checklist dialog and confirmation uses a question dialog when a display is available (`$DISPLAY` or `$WAYLAND_DISPLAY`); terminal prompts are preserved as a full fallback for headless/SSH use
+- `--help` flag with lab-friendly output: explains what the tool does, where to place ISOs, and labels the config section as admin-managed; works without sudo
+- `Makefile` with `make install`, `make update`, and `make uninstall` targets for easier setup
+### Changed
+- Per-drive output buffered to temp files and printed in order after each job completes, preventing interleaved log output during parallel processing
+- Signal trap now sends `SIGTERM` to the entire process group (`kill -- -$$`) on interrupt, letting background subshells run their own mount cleanup paths
+- `ventoy_mnt` scalar replaced with `active_mnts` array to support tracking multiple concurrent mount points
+- Per-drive work extracted into a `process_drive()` function
+- Cosmetic `sleep 1` before Ventoy installation removed
+### Fixed
+- `install.sh` was using `cat` to read the marker file, causing the version comparison to fail whenever a summon command was stored on line 2; fixed to use `sed -n '1p'` consistently
+- Removed redundant `disk_is_known()` from `lib/disk.sh`; `disk_exists()` is a strict superset and the two checks were always evaluated together
+
+---
+
 ## [0.2.0] - 2026-04-12
 ### Added
 - `SUMMON_COMMAND` variable in `defaults.conf` to customise the global command name without editing scripts
