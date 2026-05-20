@@ -20,6 +20,25 @@ case "${1:-}" in
   --update)
     exec sudo "/usr/local/share/$APP_NAME/install.sh" --update
     ;;
+  --help|-h)
+    printf "Usage: sudo %s [--help|--update]\n\n" "$SUMMON_COMMAND"
+    printf "What this tool does:\n"
+    printf "  Formats USB drives with Ventoy and copies ISO files onto them.\n"
+    printf "  Select your drives, confirm once — it handles the rest unattended.\n\n"
+    printf "Options:\n"
+    printf "  --help, -h    Show this message and exit\n"
+    printf "  --update      Re-download and reinstall Ventoy (run after a version change)\n\n"
+    printf "Before running:\n"
+    printf "  Place your .iso files in: %s\n\n" "$ISO_SRC"
+    printf "Configuration (managed by your admin):\n"
+    printf "  Ventoy version : %s\n" "$VENTOY_VERSION"
+    printf "  ISO source     : %s\n" "$ISO_SRC"
+    printf "  Log file       : %s\n" "$LOG_FILE"
+    printf "  Config file    : /usr/local/share/%s/config/defaults.conf\n\n" "$APP_NAME"
+    printf "  To change settings, open the config file as root:\n"
+    printf "  sudo nano /usr/local/share/%s/config/defaults.conf\n" "$APP_NAME"
+    exit 0
+    ;;
 esac
 
 # Superuser check
@@ -69,13 +88,8 @@ validated_choices=""
 for choice in $DISK_CHOICES; do
   device="/dev/$choice"
 
-  if ! disk_is_known "$choice"; then
-    ui_error "$choice is not a recognised disk. Skipping."
-    continue
-  fi
-
   if ! disk_exists "$device"; then
-    ui_error "$device does not exist. Skipping."
+    ui_error "$device does not exist or is not a block device. Skipping."
     continue
   fi
 
