@@ -173,15 +173,36 @@ if ! ui_confirm_selection "${validated_devices[@]}"; then
   exit 0
 fi
 
-# Process drives sequentially
+# Fan-out: launch all drives in parallel, capturing output per drive
+declare -A drive_pids
+declare -A drive_logs
+
+for choice in $validated_choices; do
+  log=$(mktemp "/tmp/bvd_${choice}_XXXXXX")
+  drive_logs["$choice"]="$log"
+  process_drive "$choice" >"$log" 2>&1 &
+  drive_pids["$choice"]=$!
+  ui_msg "Started /dev/$choice (PID ${drive_pids[$choice]})"
+done
+
+# Fan-in: wait for each drive in order and print its buffered output
 total=$(echo "$validated_choices" | wc -w)
 current=0
+overall_ok=true
 
 for choice in $validated_choices; do
   current=$((current + 1))
+  wait "${drive_pids[$choice]}"
+  exit_code=$?
   printf "\n[%d/%d] /dev/%s\n" "$current" "$total" "$choice"
-  process_drive "$choice" || true
+  cat "${drive_logs[$choice]}"
+  rm -f "${drive_logs[$choice]}"
+  [ "$exit_code" -ne 0 ] && overall_ok=false
 done
 
 printf "\n"
-ui_success "All selected drives have been processed."
+if [ "$overall_ok" = true ]; then
+  ui_success "All selected drives have been processed."
+else
+  ui_warn "Processing complete with errors on one or more drives."
+fi
