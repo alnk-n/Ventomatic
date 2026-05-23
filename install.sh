@@ -49,7 +49,7 @@ fi
 marker_version=$(sed -n '1p' "$MARKER_FILE" 2>/dev/null || true)
 
 # Download and extract Ventoy (skip if marker matches and not forced)
-if [ "$FORCE_UPDATE" = true ] || [ ! -f "$MARKER_FILE" ] || [ "$marker_version" != "$VENTOY_VERSION" ]; then
+if [ "$FORCE_UPDATE" = true ] || [ ! -f "$MARKER_FILE" ] || [ "$marker_version" != "$VENTOY_VERSION" ] || [ ! -d "/usr/local/share/$APP_NAME/$VENTOY_DIR" ]; then
   old_command=$(sed -n '2p' "$MARKER_FILE" 2>/dev/null || true)
   if [ -n "$old_command" ] && [ "$old_command" != "$SUMMON_COMMAND" ]; then
     rm -f "/usr/local/bin/$old_command"
