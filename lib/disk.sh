@@ -54,16 +54,20 @@ disk_unmount() {
 disk_copy_isos() {
   local src="$1" dst="$2" status_file="${3:-}"
   if [ -n "$status_file" ]; then
-    rsync "$src/"*.iso "$dst"/ -h --info=progress2 --checksum 2>&1 | \
+    rsync "$src/"*.iso "$dst"/ -h --info=progress2 2>&1 | \
+      tr '\r' '\n' | \
       while IFS= read -r line; do
-        printf "%s\n" "$line"
         if [[ "$line" =~ [[:space:]]([0-9]+)% ]]; then
           printf "copying:%s" "${BASH_REMATCH[1]}" > "$status_file"
+          # Log file-completion summaries (contain "(xfr#") but not mid-file updates
+          [[ "$line" == *"(xfr#"* ]] && printf "%s\n" "$line"
+        else
+          printf "%s\n" "$line"
         fi
       done
     return "${PIPESTATUS[0]}"
   else
-    rsync "$src/"*.iso "$dst"/ -h --info=progress2 --checksum
+    rsync "$src/"*.iso "$dst"/ -h --info=progress2
   fi
 }
 
